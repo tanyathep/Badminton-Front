@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Badminton SUT 2025</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* เพิ่ม CSS เฉพาะ Admin */
+        :root {
+            --primary-color: #3498db; /* กำหนดสีหลักเพื่อให้สอดคล้องกับ CSS เดิม */
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: #e74c3c;
+            transition: background-color 0.3s;
+        }
+        .header-nav a:hover {
+             background-color: #c0392b;
+        }
+        .container {
+            width: 95%;
+            margin: 20px auto;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="email"],
+        input[type="password"],
+        select,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .submit-button {
+            background-color: #e67e22;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: auto; /* ปรับให้ปุ่ม Login มีความกว้างตามเนื้อหา */
+        }
+        .submit-button:hover {
+            background-color: #d35400;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .admin-table th, .admin-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.85em;
+        }
+        .admin-table th {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+        }
+        .admin-table td a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .admin-table td button {
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        .status-select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        /* สีปุ่ม */
+        .btn-update { background-color: #4CAF50; color: white; }
+        .btn-view { background-color: #2196F3; color: white; }
+        
+        /* Modal Style */
+        .modal-overlay {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content-custom {
+            background-color: white; 
+            margin: 5% auto; 
+            padding: 20px; 
+            border: 1px solid #888; 
+            width: 80%; 
+            max-width: 700px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .modal-content-custom .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-content-custom .close-button:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">BADMINTON SUT 2025 (ADMIN)</div>
+        <div class="header-nav">
+            <a href="#" id="logoutButton" style="display: none;"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="loginSection" class="card" style="max-width: 400px; margin: 50px auto;">
+            <h2>เข้าสู่ระบบ Admin</h2>
+            <div id="loginError" style="color: red; margin-bottom: 10px;"></div>
+            <div class="form-group">
+                <label for="adminEmail">Email</label>
+                <input type="email" id="adminEmail" value="sutbadminton@gmail.com" required>
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+                <input type="password" id="adminPassword" value="99887766" required>
+            </div>
+            <button id="loginButton" class="submit-button" style="width: 100%;">เข้าสู่ระบบ</button>
+        </div>
+
+        <div id="dashboardSection" style="display: none;">
+            
+            <div class="card">
+                <h2><i class="fas fa-qrcode"></i> การจัดการ QR Code ชำระเงิน</h2>
+                <div id="currentQr" style="margin-bottom: 15px;"></div>
+                <div class="form-group">
+                    <label for="qrCodeFile">อัปโหลด QR Code (รูปภาพเท่านั้น):</label>
+                    <input type="file" id="qrCodeFile" accept="image/*" required>
+                </div>
+                <button id="uploadQrButton" class="submit-button" style="background-color: #f39c12; width: 100%;">อัปโหลดและบันทึก QR Code</button>
+                <div id="qrUploadMessage" style="margin-top: 10px;"></div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-users"></i> รายการผู้สมัครทั้งหมด</h2>
+                <div style="margin-bottom: 10px; font-weight: bold;">
+                    จำนวนทีมรวม: <span id="teamCount">0</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">รหัสทีม</th>
+                                <th style="width: 15%;">ชื่อทีม</th>
+                                <th style="width: 5%;">รุ่น</th>
+                                <th style="width: 10%;">วิธีประเมิน</th>
+                                <th style="width: 10%;">หลักฐาน Slip</th> <th style="width: 15%;">สถานะปัจจุบัน</th>
+                                <th style="width: 25%;">ดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamListBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailModal" class="modal-overlay">
+        <div class="modal-content-custom">
+            <span onclick="document.getElementById('detailModal').style.display='none'" class="close-button">&times;</span>
+            <h3>รายละเอียดทีม: <span id="modalTeamName"></span> (<span id="modalTeamCode"></span>)</h3>
+            <div id="modalContent"></div>
+            <button onclick="document.getElementById('detailModal').style.display='none'" class="submit-button" style="background-color: #f44336; margin-top: 20px;">ปิด</button>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // 1. กำหนดค่า Supabase Key (ต้องครอบด้วย Single Quote ' ')
+    // *** แก้ไข: ใส่ Project URL และ ANON/PUBLIC KEY ของคุณตรงนี้ (พร้อม Single Quote) ***
+    const SUPABASE_URL = 'https://ivqepmhiqdwrmkwjrlra.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2cWVwbWhpcWR3cm1rd2pybHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2NTIwMDAsImV4cCI6MjA4MTIyODAwMH0.0F5mBzoc3x1EC_PoxY5Y-atc3ZEm4GTej7MsyCd6saE'; 
+    
+    // 2. สร้าง Client Object (แก้ไข ReferenceError โดยการเปลี่ยนชื่อตัวแปร)
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // --- 1. การจัดการ Authentication ---
+    async function checkAuth() {
+        // ใช้ supabaseClient
+        const { data: { user } } = await supabaseClient.auth.getUser(); 
+        
+        if (user && user.email === 'sutbadminton@gmail.com') { 
+            showDashboard();
+            fetchTeamList();
+        } else {
+            showLogin();
+        }
+    }
+
+    function showLogin() {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('logoutButton').style.display = 'none';
+    }
+
+    function showDashboard() {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        document.getElementById('logoutButton').style.display = 'block';
+        fetchQrCodePath(); // เพิ่ม: ดึง QR Code ปัจจุบันมาแสดง
+    }
+
+    // --- 2. การดึงและแสดงข้อมูลทีม ---
+    async function fetchTeamList() {
+        const teamListBody = document.getElementById('teamListBody');
+        const teamCount = document.getElementById('teamCount');
+        teamListBody.innerHTML = '<tr><td colspan="7">กำลังโหลดข้อมูล...</td></tr>'; // ปรับ colspan เป็น 7
+
+        try {
+            // ดึงข้อมูลผ่าน Backend Endpoint: /api/admin/teams
+            const response = await fetch('http://localhost:3000/api/admin/teams');
+            const result = await response.json();
+
+            if (response.ok) {
+                teamCount.innerText = result.teams.length;
+                renderTeamList(result.teams);
+            } else {
+                teamListBody.innerHTML = `<tr><td colspan="7" style="color: red;">ดึงข้อมูลไม่สำเร็จ: ${result.error}</td></tr>`;
+            }
+
+        } catch (error) {
+            console.error('Error fetching teams:', error);
+            teamListBody.innerHTML = `<tr><td colspan="7" style="color: red;">ข้อผิดพลาดในการเชื่อมต่อ Server</td></tr>`;
+        }
+    }
+    
+    function renderTeamList(teams) {
+        const teamListBody = document.getElementById('teamListBody');
+        teamListBody.innerHTML = '';
+        
+        teams.forEach(team => {
+            // เพิ่ม: ลิงก์สำหรับดู Slip ถ้ามี
+            const slipStatus = team.slip_path 
+                ? `<a href="${team.slip_path}" target="_blank" style="color: #28a745; font-weight: bold;">(ดู Slip)</a>`
+                : '(ยังไม่มี Slip)';
+                
+            const statusSelectHtml = `
+                <select id="status_${team.id}" class="status-select">
+                    <option value="🟡 รอประเมิน" ${team.status === '🟡 รอประเมิน' ? 'selected' : ''}>🟡 รอประเมิน</option>
+                    <option value="✅ ผ่านการประเมิน" ${team.status === '✅ ผ่านการประเมิน' ? 'selected' : ''}>✅ ผ่านการประเมิน</option>
+                    <option value="🔵 รอตรวจสอบการโอนเงิน" ${team.status === '🔵 รอตรวจสอบการโอนเงิน' ? 'selected' : ''}>🔵 รอตรวจสอบการโอนเงิน</option>
+                    <option value="🟢 ชำระเงินแล้ว" ${team.status === '🟢 ชำระเงินแล้ว' ? 'selected' : ''}>🟢 ชำระเงินแล้ว</option>
+                    <option value="🔴 ไม่ผ่าน/ถูกยกเลิก" ${team.status === '🔴 ไม่ผ่าน/ถูกยกเลิก' ? 'selected' : ''}>🔴 ไม่ผ่าน/ถูกยกเลิก</option>
+                </select>
+            `;
+
+            const row = teamListBody.insertRow();
+            row.innerHTML = `
+                <td>${team.team_code}</td>
+                <td>${team.team_name}</td>
+                <td>${team.level}</td>
+                <td>
+                    ${team.eval_method === 'clip' ? 'คลิป' : 'On-site'} 
+                    ${team.eval_link ? `<a href="${team.eval_link}" target="_blank">(ดูคลิป)</a>` : ''}
+                </td>
+                <td>${slipStatus}</td> <td>${statusSelectHtml}</td>
+                <td>
+                    <button class="btn-view" onclick="showTeamDetails('${team.id}')"><i class="fas fa-eye"></i> ดูข้อมูล</button>
+                    <button class="btn-update" onclick="updateTeamStatus('${team.id}')"><i class="fas fa-save"></i> บันทึก</button>
+                </td>
+            `;
+        });
+    }
+    
+    // --- 3. ฟังก์ชันอัปเดตสถานะ ---
+    async function updateTeamStatus(teamId) {
+        const newStatus = document.getElementById(`status_${teamId}`).value;
+        if (!confirm(`ยืนยันการเปลี่ยนสถานะทีมเป็น "${newStatus}"?`)) {
+            return;
+        }
+
+        try {
+            // เรียก Backend Endpoint สำหรับอัปเดตสถานะ
+            const response = await fetch('http://localhost:3000/api/admin/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ team_id: teamId, new_status: newStatus })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                alert(`อัปเดตสถานะสำเร็จ: ${result.message}`);
+                fetchTeamList(); // โหลดข้อมูลใหม่
+            } else {
+                alert(`อัปเดตไม่สำเร็จ: ${result.error}`);
+            }
+        } catch (error) {
+            console.error('Update status error:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+        }
+    }
+
+    // --- 4. ฟังก์ชันแสดงรายละเอียดใน Modal ---
+    async function showTeamDetails(teamId) {
+        const modal = document.getElementById('detailModal');
+        const modalContent = document.getElementById('modalContent');
+        modalContent.innerHTML = 'กำลังโหลด...';
+
+        try {
+            // ดึงข้อมูลผู้เล่นและรายละเอียดทั้งหมด (ต้องสร้าง Endpoint ใหม่)
+            const response = await fetch(`http://localhost:3000/api/admin/team-details/${teamId}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                const team = result.team;
+                document.getElementById('modalTeamName').innerText = team.team_name;
+                document.getElementById('modalTeamCode').innerText = team.team_code;
+                
+                const p1 = team.players.find(p => p.is_player_one);
+                const p2 = team.players.find(p => !p.is_player_one);
+                
+                modalContent.innerHTML = `
+                    <h4><i class="fas fa-clipboard-list"></i> ข้อมูลการสมัคร</h4>
+                    <p><strong>รุ่น:</strong> มือ ${team.level}</p>
+                    <p><strong>ค่าสมัครรวม:</strong> ${team.total_fee} บาท</p>
+                    <p><strong>Link ประเมิน:</strong> ${team.eval_link ? `<a href="${team.eval_link}" target="_blank">${team.eval_link}</a>` : 'ไม่มี'}</p>
+                    <p><strong>Slip โอนเงิน:</strong> ${team.slip_path ? `<a href="${team.slip_path}" target="_blank" style="color: #28a745; font-weight: bold;">ดู Slip</a>` : 'ยังไม่อัปโหลด'}</p>
+                    <hr>
+                    
+                    <h4><i class="fas fa-user"></i> ผู้เล่นคนที่ 1 (หัวหน้าทีม)</h4>
+                    <p><strong>ชื่อ:</strong> ${p1 ? p1.full_name : 'ไม่พบ'}</p>
+                    <p><strong>รหัส:</strong> ${p1 ? p1.std_staff_id : 'ไม่พบ'}</p>
+                    <p><strong>ประเภท:</strong> ${p1 ? (p1.type === 'student' ? 'นักศึกษา' : 'บุคลากร') : 'ไม่พบ'}</p>
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        ${p1 && p1.photo_path ? `<a href="${p1.photo_path}" target="_blank"><img src="${p1.photo_path}" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/></a>` : 'ไม่มีรูปภาพ'}
+                    </div>
+                    
+                    <h4><i class="fas fa-user-friends"></i> ผู้เล่นคนที่ 2</h4>
+                    <p><strong>ชื่อ:</strong> ${p2 ? p2.full_name : 'ไม่พบ'}</p>
+                    <p><strong>รหัส:</strong> ${p2 ? p2.std_staff_id : 'ไม่พบ'}</p>
+                    <p><strong>ประเภท:</strong> ${p2 ? (p2.type === 'student' ? 'นักศึกษา' : 'บุคลากร') : 'ไม่พบ'}</p>
+                    <div style="text-align: center; margin-bottom: 10px;">
+                         ${p2 && p2.photo_path ? `<a href="${p2.photo_path}" target="_blank"><img src="${p2.photo_path}" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/></a>` : 'ไม่มีรูปภาพ'}
+                    </div>
+                `;
+                modal.style.display = 'block';
+            } else {
+                modalContent.innerHTML = `<p style="color: red;">ไม่พบข้อมูลทีมนี้</p>`;
+                modal.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error fetching details:', error);
+            modalContent.innerHTML = `<p style="color: red;">เกิดข้อผิดพลาดในการเชื่อมต่อ Server</p>`;
+            modal.style.display = 'block';
+        }
+    }
+
+    // --- 5. การจัดการ QR Code ---
+
+    // ดึง QR Code Path ปัจจุบันและแสดงผล
+    async function fetchQrCodePath() {
+        const qrDiv = document.getElementById('currentQr');
+        qrDiv.innerHTML = 'กำลังตรวจสอบ QR Code ปัจจุบัน...';
+        try {
+             // ต้องสร้าง Endpoint ใหม่ใน server.js สำหรับดึง config
+             const response = await fetch('http://localhost:3000/api/config/qr_code_path');
+             const result = await response.json();
+
+             if (response.ok && result.qr_code_path) {
+                qrDiv.innerHTML = `
+                    <p style="color: green; font-weight: bold;"><i class="fas fa-check-circle"></i> QR Code ถูกตั้งค่าแล้ว:</p>
+                    <a href="${result.qr_code_path}" target="_blank"><img src="${result.qr_code_path}" style="max-width: 150px; border: 1px solid #ccc; padding: 5px;"/></a>
+                `;
+             } else {
+                qrDiv.innerHTML = `<p style="color: red; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> ยังไม่มีการอัปโหลด QR Code</p>`;
+             }
+            
+        } catch (e) {
+            console.error('Error fetching QR:', e);
+            qrDiv.innerHTML = '<p style="color: red;">ไม่สามารถเชื่อมต่อเพื่อดึง QR Code ปัจจุบัน</p>';
+        }
+    }
+
+    // Event Listener สำหรับอัปโหลด QR Code
+    document.getElementById('uploadQrButton').addEventListener('click', async function() {
+        const qrFile = document.getElementById('qrCodeFile').files[0];
+        const messageDiv = document.getElementById('qrUploadMessage');
+        
+        if (!qrFile) {
+            messageDiv.innerHTML = '<p style="color: red;">กรุณาเลือกไฟล์ QR Code</p>';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('qr_code', qrFile); // ชื่อ field ต้องตรงกับ 'qr_code' ใน server.js
+
+        this.disabled = true;
+        this.innerText = 'กำลังอัปโหลด...';
+        messageDiv.innerHTML = '';
+        
+        try {
+            // เรียก API Endpoint สำหรับอัปโหลด QR Code
+            const response = await fetch('http://localhost:3000/api/admin/upload-qr', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                messageDiv.innerHTML = `<p style="color: green; font-weight: bold;">✅ อัปโหลดสำเร็จ: <a href="${result.url}" target="_blank">ดู QR Code</a></p>`;
+                fetchQrCodePath(); // โหลด path ใหม่มาแสดง
+            } else {
+                messageDiv.innerHTML = `<p style="color: red;">❌ อัปโหลดไม่สำเร็จ: ${result.error}</p>`;
+            }
+            
+        } catch (error) {
+            messageDiv.innerHTML = '<p style="color: red;">เกิดข้อผิดพลาดในการเชื่อมต่อ Server</p>';
+        } finally {
+            this.disabled = false;
+            this.innerText = 'อัปโหลดและบันทึก QR Code';
+        }
+    });
+
+    // --- 6. Event Listeners หลัก ---
+
+    // Login Button
+    document.getElementById('loginButton').addEventListener('click', async () => {
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.innerText = '';
+        
+        if (email !== 'sutbadminton@gmail.com') {
+             errorDiv.innerText = 'สิทธิ์การเข้าถึงถูกจำกัด';
+             return;
+        }
+
+        try {
+            // ใช้ supabaseClient
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorDiv.innerText = 'Login ไม่สำเร็จ: ' + error.message;
+            } else {
+                checkAuth();
+            }
+        } catch (e) {
+            errorDiv.innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+            console.error('Login Error:', e);
+        }
+    });
+
+    // Logout Button
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+        // ใช้ supabaseClient
+        await supabaseClient.auth.signOut();
+        showLogin();
+    });
+
+    // ปิด Modal เมื่อคลิกนอก Modal
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('detailModal')) {
+            document.getElementById('detailModal').style.display = "none";
+        }
+    }
+
+    // 7. เริ่มต้นการตรวจสอบสิทธิ์
+    checkAuth();
+</script>
+</body>
+</html>

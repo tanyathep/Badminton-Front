@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badminton SUT 2025 - หน้าแรก</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS สำหรับ Real-time Status (ปรับตามโครงสร้างใหม่) */
+        .level-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .level-box {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .level-box h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .level-box .count {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e67e22; /* สีส้ม */
+            margin: 5px 0;
+        }
+        .level-box .passed-count {
+            font-size: 0.9em;
+            color: #2ecc71; /* สีเขียว */
+        }
+        .level-box.full .count {
+            color: #e74c3c; /* สีแดงเมื่อเต็ม */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">BADMINTON SUT 2025</div>
+        <div class="header-nav">
+            <a href="status.html">ตรวจสอบรายชื่อ/สถานะ</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="hero">
+                <h1>Badminton SUT 2025</h1>
+                <p>สมัครแข่งขันออนไลน์</p>
+                <a href="register.html" class="apply-button">
+                    สมัครแข่งขัน
+                </a>
+            </div>
+
+            <div class="status-section">
+                <h3>| สถานะการรับสมัคร</h3>
+                <div class="level-status-grid">
+                    <div class="level-box">
+                        <h4>มือ E</h4>
+                        <div class="count"><span id="countE">0</span>/<span id="maxE">32</span></div>
+                        <div class="passed-count"><i class="fas fa-check-circle"></i> ผ่านแล้ว <span id="passedE">0</span> ทีม</div>
+                    </div>
+                    
+                    <div class="level-box">
+                        <h4>มือ D</h4>
+                        <div class="count"><span id="countD">0</span>/<span id="maxD">32</span></div>
+                        <div class="passed-count"><i class="fas fa-check-circle"></i> ผ่านแล้ว <span id="passedD">0</span> ทีม</div>
+                    </div>
+                    
+                    <div class="level-box">
+                        <h4>มือ C</h4>
+                        <div class="count"><span id="countC">0</span>/<span id="maxC">32</span></div>
+                        <div class="passed-count"><i class="fas fa-check-circle"></i> ผ่านแล้ว <span id="passedC">0</span> ทีม</div>
+                    </div>
+                    
+                    <div class="level-box">
+                        <h4>มือ B</h4>
+                        <div class="count"><span id="countB">0</span>/<span id="maxB">32</span></div>
+                        <div class="passed-count"><i class="fas fa-check-circle"></i> ผ่านแล้ว <span id="passedB">0</span> ทีม</div>
+                    </div>
+                    
+                    <div class="level-box">
+                        <h4>มือ A</h4>
+                        <div class="count"><span id="countA">0</span>/<span id="maxA">32</span></div>
+                        <div class="passed-count"><i class="fas fa-check-circle"></i> ผ่านแล้ว <span id="passedA">0</span> ทีม</div>
+                    </div>
+                </div>
+                <p style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d;"><i class="fas fa-sync-alt fa-spin" id="loadingIcon" style="display: none;"></i> อัปเดตข้อมูลล่าสุดทุก 1 นาที</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // กำหนดโควต้าสูงสุดของแต่ละรุ่น (อาจดึงจาก config ใน Backend แต่ใช้ค่าคงที่นี้ไปก่อน)
+        const MAX_TEAMS = 32; 
+        const LEVELS = ['A', 'B', 'C', 'D', 'E'];
+
+        function updateLevelBox(level, currentCount, passedCount) {
+            const countElement = document.getElementById(`count${level}`);
+            const passedElement = document.getElementById(`passed${level}`);
+            const maxElement = document.getElementById(`max${level}`);
+            const levelBox = countElement ? countElement.closest('.level-box') : null;
+            
+            if (countElement && passedElement && maxElement && levelBox) {
+                countElement.textContent = currentCount;
+                passedElement.textContent = passedCount;
+                maxElement.textContent = MAX_TEAMS;
+
+                // เปลี่ยนสีเมื่อเต็ม
+                if (currentCount >= MAX_TEAMS) {
+                    levelBox.classList.add('full');
+                } else {
+                    levelBox.classList.remove('full');
+                }
+            }
+        }
+
+        async function fetchTeamCountByLevel() {
+            const loadingIcon = document.getElementById('loadingIcon');
+            loadingIcon.style.display = 'inline';
+
+            try {
+                // Endpoint ใหม่ที่ต้องเพิ่มใน server.js
+                const response = await fetch('http://localhost:3000/api/team-count-by-level'); 
+                const data = await response.json();
+                
+                if (data.counts) {
+                    LEVELS.forEach(level => {
+                        const countData = data.counts.find(c => c.level === level) || { total: 0, passed: 0 };
+                        updateLevelBox(level, countData.total, countData.passed);
+                    });
+                } else {
+                    console.error('API did not return counts data.');
+                }
+
+            } catch (error) {
+                console.error('Failed to fetch team count by level:', error);
+                // ตั้งค่าเป็น N/A ในกรณีที่เกิดข้อผิดพลาด
+                LEVELS.forEach(level => {
+                    document.getElementById(`count${level}`).textContent = 'N/A';
+                    document.getElementById(`passed${level}`).textContent = 'N/A';
+                });
+            } finally {
+                loadingIcon.style.display = 'none';
+            }
+        }
+
+        // 1. ดึงข้อมูลครั้งแรกทันทีเมื่อโหลดหน้าเว็บ
+        fetchTeamCountByLevel(); 
+
+        // 2. ตั้งค่าให้ดึงข้อมูลซ้ำทุก 5 วินาที
+        setInterval(fetchTeamCountByLevel, 60000); 
+    </script>
+</body>
+</html>

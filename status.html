@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตรวจสอบสถานะ - Badminton SUT 2025</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS เดิมที่ผมให้ไว้ในครั้งที่แล้ว ยังคงใช้งานได้ดี */
+        .status-badge { padding: 5px 10px; border-radius: 5px; color: white; font-weight: bold; display: inline-block; margin-left: 10px; }
+        .status-badge.status-🟡-รอประเมิน { background-color: #f39c12; }
+        .status-badge.status-✅-ผ่านการประเมิน { background-color: #2ecc71; }
+        .status-badge.status-🔵-รอตรวจสอบการโอนเงิน { background-color: #3498db; }
+        .status-badge.status-🟢-ชำระเงินแล้ว { background-color: #27ae60; }
+        .status-badge.status-🔴-ไม่ผ่าน/ถูกยกเลิก { background-color: #e74c3c; }
+        
+        .payment-section { margin-top: 30px; padding: 20px; border: 2px solid #f39c12; border-radius: 8px; background-color: #fff9f5; }
+        .payment-section h3 { color: #f39c12; border-bottom: 2px solid #f39c12; padding-bottom: 10px; margin-top: 0; }
+        .qr-image { max-width: 200px; border: 1px solid #ccc; padding: 10px; background-color: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .uploaded-slip-info { padding: 15px; border: 1px dashed #3498db; border-radius: 5px; background-color: #e9f5ff; color: #3498db; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">BADMINTON SUT 2025</div>
+        <div class="header-nav">
+            <a href="index.html"><i class="fas fa-home"></i> หน้าหลัก</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="card status-checker">
+            <h2><i class="fas fa-search"></i> ตรวจสอบสถานะทีม</h2>
+            <div class="form-group">
+                <label for="teamName">ชื่อทีม:</label> 
+                <input type="text" id="teamName" placeholder="กรอกชื่อทีมที่ใช้ลงทะเบียน" required>
+            </div>
+            <button id="checkStatusButton" class="submit-button" style="width: 100%;"><i class="fas fa-check-circle"></i> ตรวจสอบสถานะ</button>
+            
+            <div id="statusResult" class="status-result" style="display: none; margin-top: 30px; padding: 20px; border-radius: 8px; border: 1px solid #ccc;">
+                </div>
+            
+            <div id="paymentSection" class="payment-section" style="display: none;">
+                </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // ฟังก์ชันหลัก: ตรวจสอบสถานะทีมด้วยชื่อทีม
+        document.getElementById('checkStatusButton').addEventListener('click', async function() {
+            // *** แก้ไข: เปลี่ยนการดึงค่าจาก teamCode เป็น teamName ***
+            const teamNameInput = document.getElementById('teamName');
+            const teamName = teamNameInput.value.trim(); 
+            const statusResultDiv = document.getElementById('statusResult');
+            const paymentSection = document.getElementById('paymentSection');
+            const button = this;
+
+            if (!teamName) {
+                alert('กรุณากรอกชื่อทีม');
+                return;
+            }
+
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+            statusResultDiv.style.display = 'none';
+            paymentSection.style.display = 'none';
+            statusResultDiv.innerHTML = '';
+
+
+            try {
+                // *** แก้ไข Endpoint: เรียกใช้ /api/status/name/:teamName ใหม่ ***
+                const response = await fetch(`http://localhost:3000/api/status/name/${teamName}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    const team = result.team;
+                    const qrCodePath = result.qr_code_path; 
+                    
+                    // 1. แสดงรายละเอียดทีมทั่วไป
+                    let playersHtml = '';
+                    team.players.forEach(p => {
+                        playersHtml += `
+                            <li>${p.full_name} (${p.type === 'student' ? 'นักศึกษา' : 'บุคลากร'}) รหัส: ${p.std_staff_id}</li>
+                        `;
+                    });
+
+                    statusResultDiv.innerHTML = `
+                        <h3><i class="fas fa-info-circle"></i> ข้อมูลทีมของคุณ (${team.team_code})</h3>
+                        <p><strong>ชื่อทีม:</strong> ${team.team_name}</p>
+                        <p><strong>รุ่นที่สมัคร:</strong> มือ ${team.level}</p>
+                        <p><strong>ค่าสมัครรวม:</strong> ${team.total_fee} บาท</p>
+                        <p><strong>สถานะปัจจุบัน:</strong> <span class="status-badge status-${team.status.toLowerCase().replace(/ /g, '-')}" style="font-weight: bold;">${team.status}</span></p>
+                        <p><strong>ผู้เล่น:</strong>
+                            <ul style="list-style-type: none; padding-left: 0; margin-top: 5px;">${playersHtml}</ul>
+                        </p>
+                    `;
+                    
+                    // 2. จัดการส่วนการชำระเงินตามสถานะ
+                    if (team.status === '✅ ผ่านการประเมิน') {
+                        // ทีมผ่านการประเมินแล้ว ต้องชำระเงิน
+                        if (qrCodePath) {
+                            paymentSection.innerHTML = `
+                                <h3>💸 ยืนยันการชำระเงิน</h3>
+                                <p>ยอดที่ต้องชำระ: <strong style="color: #e67e22; font-size: 1.2em;">${team.total_fee}</strong> บาท</p>
+                                <div style="text-align: center; margin: 20px 0;">
+                                    <h4>สแกนเพื่อโอนเงิน (พร้อมเพย์)</h4>
+                                    <img src="${qrCodePath}" alt="QR Code" class="qr-image">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="slipFile"><i class="fas fa-file-upload"></i> อัปโหลดหลักฐานการโอนเงิน (Slip):</label>
+                                    <input type="file" id="slipFile" accept="image/*,application/pdf" required>
+                                    <small style="color: #f44336;">*ไฟล์รูปภาพ (JPG/PNG) หรือ PDF เท่านั้น</small>
+                                </div>
+                                
+                                <button id="uploadSlipButton" class="submit-button" style="background-color: #28a745; width: 100%;" data-teamcode="${team.team_code}"><i class="fas fa-check-circle"></i> ยืนยันการโอนเงิน</button>
+                                <div id="uploadMessage" style="margin-top: 15px;"></div>
+                            `;
+                        } else {
+                            paymentSection.innerHTML = `<p style="color: red; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> Admin ยังไม่ได้อัปโหลด QR Code สำหรับชำระเงิน กรุณาติดต่อ Admin</p>`;
+                        }
+                        paymentSection.style.display = 'block';
+
+                    } else if (team.status === '🔵 รอตรวจสอบการโอนเงิน' || team.status === '🟢 ชำระเงินแล้ว') {
+                        // ทีมอยู่ในสถานะรอตรวจสอบ/ชำระแล้ว
+                        paymentSection.innerHTML = `
+                            <div class="uploaded-slip-info">
+                                <p><i class="fas fa-clock"></i> สถานะ: ${team.status}</p>
+                                <p>คุณได้อัปโหลด Slip โอนเงินเรียบร้อยแล้ว: 
+                                ${team.slip_path ? `<a href="${team.slip_path}" target="_blank" style="color: inherit;">(คลิกเพื่อดู Slip)</a>` : ''}
+                                </p>
+                                <p>Admin จะทำการตรวจสอบและเปลี่ยนสถานะเป็น "ชำระเงินแล้ว" ให้ในภายหลัง</p>
+                            </div>
+                        `;
+                        paymentSection.style.display = 'block';
+                    }
+
+                    statusResultDiv.style.display = 'block';
+
+                } else {
+                    // *** แก้ไขข้อความ Error ให้สอดคล้องกับการค้นหาด้วยชื่อทีม ***
+                    statusResultDiv.innerHTML = `<p style="color: red;"><i class="fas fa-times-circle"></i> ไม่พบทีมชื่อ "${teamName}" นี้ หรือเกิดข้อผิดพลาด: ${result.error}</p>`;
+                    statusResultDiv.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Network or Server Error:', error);
+                statusResultDiv.innerHTML = `<p style="color: red;"><i class="fas fa-server"></i> เกิดข้อผิดพลาดในการเชื่อมต่อกับ Server</p>`;
+                statusResultDiv.style.display = 'block';
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check-circle"></i> ตรวจสอบสถานะ';
+            }
+        });
+
+        // ฟังก์ชันใหม่: จัดการการอัปโหลด Slip (ใช้ Event Delegation)
+        document.addEventListener('click', async function(event) {
+            if (event.target && event.target.id === 'uploadSlipButton') {
+                const teamCode = event.target.getAttribute('data-teamcode');
+                const slipFile = document.getElementById('slipFile').files[0];
+                const uploadMessage = document.getElementById('uploadMessage');
+                
+                if (!slipFile) {
+                    uploadMessage.innerHTML = '<p style="color: red;"><i class="fas fa-exclamation-circle"></i> กรุณาเลือกไฟล์ Slip โอนเงิน</p>';
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('slip', slipFile);
+
+                event.target.disabled = true;
+                event.target.innerHTML = '<i class="fas fa-upload fa-spin"></i> กำลังอัปโหลด...';
+                uploadMessage.innerHTML = '';
+                
+                try {
+                    // ใช้ teamCode ที่ดึงมาจากข้อมูลทีมในการส่ง API
+                    const response = await fetch(`http://localhost:3000/api/upload-slip/${teamCode}`, { 
+                        method: 'POST',
+                        body: formData 
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        uploadMessage.innerHTML = `<p style="color: green; font-weight: bold;"><i class="fas fa-check"></i> ${result.message}</p>`;
+                        // โหลดสถานะใหม่ทันที เพื่ออัปเดตหน้าจอ
+                        document.getElementById('checkStatusButton').click(); 
+                    } else {
+                        uploadMessage.innerHTML = `<p style="color: red;"><i class="fas fa-times"></i> อัปโหลดไม่สำเร็จ: ${result.error}</p>`;
+                    }
+                    
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    uploadMessage.innerHTML = '<p style="color: red;"><i class="fas fa-server"></i> เกิดข้อผิดพลาดในการเชื่อมต่อ Server</p>';
+                } finally {
+                    event.target.disabled = false;
+                    event.target.innerHTML = '<i class="fas fa-check-circle"></i> ยืนยันการโอนเงิน';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

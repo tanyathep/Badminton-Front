@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนแข่งขัน - Badminton SUT 2025</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">BADMINTON SUT 2025</div>
+        <div class="header-nav">
+            <a href="index.html">หน้าหลัก</a>
+            
+        </div>
+    </div>
+
+    
+
+    <div class="container">
+    <form id="registrationForm">
+        <div class="card registration-details">
+            <h3>รายละเอียดการสมัคร</h3>
+            <div class="form-group">
+                <label for="teamName">ชื่อทีม</label>
+                <input type="text" id="teamName" name="team_name" placeholder="ระบุชื่อทีมของคุณ" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="level">รุ่น</label>
+                <select id="level" name="level" required>
+                    <option value="E">มือ E</option>
+                    <option value="D">มือ D</option>
+                    <option value="C">มือ C</option>
+                    <option value="B">มือ B</option>
+                    <option value="A">มือ A</option>
+                </select>
+            </div>
+
+            <p style="font-weight: bold; margin-top: 30px;">ข้อมูลผู้เล่น</p>
+            
+            <div class="players-container">
+                
+                <div class="player-card">
+                    <p style="font-weight: bold;">ผู้เล่นคนที่ 1</p>
+                    <div class="form-group"><label for="p1_name">ชื่อ</label><input type="text" id="p1_name" name="p1_name" required></div>
+                    <div class="form-group"><label for="p1_id">รหัสนศ./รหัสพนักงาน</label><input type="text" id="p1_id" name="p1_id" required></div>
+                    <div class="form-group">
+                        <label for="p1_type">ประเภท</label>
+                        <select id="p1_type" name="p1_type" onchange="calculateFee()" required>
+                            <option value="student">นักศึกษา (150 บาท)</option>
+                            <option value="staff">บุคลากร (300 บาท)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>รูปภาพตัวเอง(ให้เห็นหน้าชัด)</label>
+                        <div class="image-preview-container" id="p1_preview"><i class="fas fa-image fa-3x" style="color: #ccc;"></i></div>
+                        <label for="p1_photo" class="upload-box"><i class="fas fa-camera"></i> เลือก/เปลี่ยนรูป</label>
+                        <input type="file" id="p1_photo" name="p1_photo" onchange="previewImage('p1_photo', 'p1_preview')" accept="image/*" required>
+                    </div>
+                </div> 
+                <div class="player-card">
+                    <p style="font-weight: bold;">ผู้เล่นคนที่ 2</p>
+                    <div class="form-group"><label for="p2_name">ชื่อ </label><input type="text" id="p2_name" name="p2_name" required></div>
+                    <div class="form-group"><label for="p2_id">รหัสนศ./รหัสพนักงาน </label><input type="text" id="p2_id" name="p2_id" required></div>
+                    <div class="form-group">
+                        <label for="p2_type">ประเภท</label>
+                        <select id="p2_type" name="p2_type" onchange="calculateFee()" required>
+                            <option value="student">นักศึกษา (150 บาท)</option>
+                            <option value="staff">บุคลากร (300 บาท)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>รูปภาพตัวเอง(ให้เห็นหน้าชัด)</label>
+                        <div class="image-preview-container" id="p2_preview"><i class="fas fa-image fa-3x" style="color: #ccc;"></i></div>
+                        <label for="p2_photo" class="upload-box"><i class="fas fa-camera"></i> เลือก/เปลี่ยนรูป</label>
+                        <input type="file" id="p2_photo" name="p2_photo" onchange="previewImage('p2_photo', 'p2_preview')" accept="image/*" required>
+                    </div>
+                </div>
+                </div>
+            <h3 style="margin-top: 30px;">การประเมินมือ (สำหรับ Admin)</h3>
+            <div class="form-group">
+                <label for="evaluation_method">วิธีการประเมินมือ</label>
+                <select id="evaluation_method" name="eval_method" required>
+                    <option value="clip">ส่งคลิปวิดีโอ (อัปโหลด/Link)</option>
+                    <option value="onsite">ประเมิน On-site</option>
+                </select>
+            </div>
+            <div class="form-group" id="clip_input_group">
+                <label for="clip_link">Link คลิปวิดีโอ (YouTube/Drive)</label>
+                <input type="text" id="clip_link" name="eval_link" placeholder="ถ้าส่งเป็นไฟล์ให้ Admin ติดต่อภายหลัง">
+            </div>
+
+            <div style="text-align: right; margin-top: 20px; font-size: 1.2em;">
+                **ค่าสมัครรวม:** <span id="totalFee" style="color: var(--primary-color); font-weight: bold;">300</span> บาท
+            </div>
+
+            <button type="submit" class="submit-button">ยืนยันการลงทะเบียน</button>
+        </div>
+    </form>
+</div>
+    <script>
+    // 1. ฟังก์ชันใหม่: แสดงตัวอย่างรูปภาพ
+    function previewImage(inputID, previewID) {
+        const input = document.getElementById(inputID);
+        const previewContainer = document.getElementById(previewID);
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewContainer.innerHTML = `<img src="${e.target.result}" alt="Photo Preview">`;
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewContainer.innerHTML = `<i class="fas fa-image fa-3x" style="color: #ccc;"></i>`;
+        }
+    }
+
+    // 2. โค้ดคำนวณค่าสมัคร (เหมือนเดิม)
+    function calculateFee() {
+        // ... (โค้ดคำนวณค่าสมัครเหมือนเดิม) ...
+        const p1Type = document.getElementById('p1_type').value;
+        const p2Type = document.getElementById('p2_type').value;
+        let totalFee = 0;
+
+        if (p1Type === 'student') totalFee += 150;
+        if (p1Type === 'staff') totalFee += 300;
+
+        if (p2Type === 'student') totalFee += 150;
+        if (p2Type === 'staff') totalFee += 300;
+
+        document.getElementById('totalFee').innerText = totalFee;
+    }
+
+    document.addEventListener('DOMContentLoaded', calculateFee);
+
+    // 3. JavaScript สำหรับการส่งฟอร์ม (เชื่อมต่อกับ Backend Server)
+    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const submitButton = form.querySelector('.submit-button');
+
+        // ใช้ FormData ในการรวมข้อมูลฟอร์มและไฟล์ (รูปภาพ)
+        const formData = new FormData(form);
+
+        // ... (ส่วนการเตรียม formData เหมือนเดิม) ...
+
+        submitButton.disabled = true;
+        submitButton.innerText = 'กำลังส่งข้อมูล...';
+
+        try {
+            // ส่งข้อมูลไปยัง API Endpoint ใน Express Server ที่รันอยู่ที่ Port 3000
+            const response = await fetch('http://localhost:3000/api/register', {
+                method: 'POST',
+                body: formData 
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(`ลงทะเบียนสำเร็จ! รหัสทีมของคุณ: ${result.team_code} โปรดใช้รหัสนี้ในการติดตามสถานะ`);
+
+                form.reset(); 
+                calculateFee();
+                // รีเซ็ต Preview รูปภาพ
+                document.getElementById('p1_preview').innerHTML = `<i class="fas fa-image fa-3x" style="color: #ccc;"></i>`;
+                document.getElementById('p2_preview').innerHTML = `<i class="fas fa-image fa-3x" style="color: #ccc;"></i>`;
+
+            } else {
+                alert(`ลงทะเบียนไม่สำเร็จ: ${result.error || 'Server Error'}`);
+            }
+        } catch (error) {
+            console.error('Network or Server Error:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Server โปรดลองอีกครั้ง');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerText = 'ยืนยันการลงทะเบียน';
+        }
+    });
+</script>
