@@ -72,8 +72,7 @@
             try {
                 // *** แก้ไข Endpoint: เรียกใช้ /api/status/name/:teamName ใหม่ ***
                 const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
-                const response = await fetch(`${BACKEND_URL}/api/status/name/${teamName}`);
-                
+                const response = await fetch(`${BACKEND_URL}/api/status/name/${teamName}`);AD            
                 const result = await response.json();
 
                 if (response.ok) {
