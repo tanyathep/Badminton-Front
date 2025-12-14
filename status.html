@@ -71,7 +71,8 @@
 
             try {
                 // *** แก้ไข Endpoint: เรียกใช้ /api/status/name/:teamName ใหม่ ***
-                const response = await fetch(`http://localhost:3000/api/status/name/${teamName}`);
+                const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+                const response = await fetch(`${BACKEND_URL}/api/status/name/${teamName}`);
                 const result = await response.json();
 
                 if (response.ok) {
@@ -176,7 +177,8 @@
                 
                 try {
                     // ใช้ teamCode ที่ดึงมาจากข้อมูลทีมในการส่ง API
-                    const response = await fetch(`http://localhost:3000/api/upload-slip/${teamCode}`, { 
+                    const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+                    const response = await fetch(`${BACKEND_URL}/api/upload-slip/${teamCode}`, { 
                         method: 'POST',
                         body: formData 
                     });
