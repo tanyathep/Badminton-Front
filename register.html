@@ -155,7 +155,8 @@
 
         try {
             // ส่งข้อมูลไปยัง API Endpoint ใน Express Server ที่รันอยู่ที่ Port 3000
-            const response = await fetch('http://localhost:3000/api/register', {
+            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+            const response = await fetch('${BACKEND_URL}/api/register', {
                 method: 'POST',
                 body: formData 
             });

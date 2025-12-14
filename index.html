@@ -127,7 +127,9 @@
 
             try {
                 // Endpoint ใหม่ที่ต้องเพิ่มใน server.js
-                const response = await fetch('http://localhost:3000/api/team-count-by-level'); 
+                const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+                const response = await fetch('${BACKEND_URL}/api/team-count-by-level');
+                 
                 const data = await response.json();
                 
                 if (data.counts) {

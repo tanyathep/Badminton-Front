@@ -258,7 +258,8 @@
 
         try {
             // ดึงข้อมูลผ่าน Backend Endpoint: /api/admin/teams
-            const response = await fetch('http://localhost:3000/api/admin/teams');
+            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+            const response = await fetch('${BACKEND_URL}/api/admin/teams');
             const result = await response.json();
 
             if (response.ok) {
@@ -321,7 +322,8 @@
 
         try {
             // เรียก Backend Endpoint สำหรับอัปเดตสถานะ
-            const response = await fetch('http://localhost:3000/api/admin/update-status', {
+            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+            const response = await fetch('${BACKEND_URL}/api/admin/update-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -351,7 +353,8 @@
 
         try {
             // ดึงข้อมูลผู้เล่นและรายละเอียดทั้งหมด (ต้องสร้าง Endpoint ใหม่)
-            const response = await fetch(`http://localhost:3000/api/admin/team-details/${teamId}`);
+            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+            const response = await fetch(`${BACKEND_URL}/api/admin/team-details/${teamId}`);
             const result = await response.json();
 
             if (response.ok) {
@@ -406,7 +409,9 @@
         qrDiv.innerHTML = 'กำลังตรวจสอบ QR Code ปัจจุบัน...';
         try {
              // ต้องสร้าง Endpoint ใหม่ใน server.js สำหรับดึง config
-             const response = await fetch('http://localhost:3000/api/config/qr_code_path');
+             const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+             const response = await fetch('${BACKEND_URL}/api/config/qr_code_path');
+             
              const result = await response.json();
 
              if (response.ok && result.qr_code_path) {
@@ -443,7 +448,8 @@
         
         try {
             // เรียก API Endpoint สำหรับอัปโหลด QR Code
-            const response = await fetch('http://localhost:3000/api/admin/upload-qr', {
+            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+            const response = await fetch('${BACKEND_URL}/api/admin/upload-qr', {
                 method: 'POST',
                 body: formData
             });
