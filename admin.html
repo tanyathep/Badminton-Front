@@ -9,7 +9,7 @@
     <style>
         /* เพิ่ม CSS เฉพาะ Admin */
         :root {
-            --primary-color: #3498db; /* กำหนดสีหลักเพื่อให้สอดคล้องกับ CSS เดิม */
+            --primary-color: #8c52ff; /* กำหนดสีหลักเพื่อให้สอดคล้องกับ CSS เดิม */
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,7 +19,7 @@
             color: #333;
         }
         .header {
-            background-color: var(--primary-color);
+            background-color: #ff9900;
             color: white;
             padding: 15px 20px;
             display: flex;
@@ -36,7 +36,7 @@
             transition: background-color 0.3s;
         }
         .header-nav a:hover {
-             background-color: #c0392b;
+            background-color: #c0392b;
         }
         .container {
             width: 95%;
@@ -79,9 +79,9 @@
             width: auto; /* ปรับให้ปุ่ม Login มีความกว้างตามเนื้อหา */
         }
         .submit-button:hover {
-            background-color: #d35400;
+            background-color: #ff9900;
         }
-
+/*#d35400*/
         .admin-table {
             width: 100%;
             border-collapse: collapse;
@@ -94,12 +94,12 @@
             font-size: 0.85em;
         }
         .admin-table th {
-            background-color: var(--primary-color);
+            background-color: #ff9900;
             color: white;
             cursor: pointer;
         }
         .admin-table td a {
-            color: var(--primary-color);
+            color: #ff9900;
             text-decoration: none;
         }
         .admin-table td button {
@@ -216,12 +216,13 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // 1. กำหนดค่า Supabase Key (ต้องครอบด้วย Single Quote ' ')
+    // 1. กำหนดค่า Supabase Key และ Backend URL
     // *** แก้ไข: ใส่ Project URL และ ANON/PUBLIC KEY ของคุณตรงนี้ (พร้อม Single Quote) ***
     const SUPABASE_URL = 'https://ivqepmhiqdwrmkwjrlra.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2cWVwbWhpcWR3cm1rd2pybHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2NTIwMDAsImV4cCI6MjA4MTIyODAwMH0.0F5mBzoc3x1EC_PoxY5Y-atc3ZEm4GTej7MsyCd6saE'; 
-    
-    // 2. สร้าง Client Object (แก้ไข ReferenceError โดยการเปลี่ยนชื่อตัวแปร)
+    const BACKEND_URL = 'https://badminton-back.onrender.com'; // <--- URL Render ของคุณ
+
+    // 2. สร้าง Client Object
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     // --- 1. การจัดการ Authentication ---
@@ -257,9 +258,8 @@
         teamListBody.innerHTML = '<tr><td colspan="7">กำลังโหลดข้อมูล...</td></tr>'; // ปรับ colspan เป็น 7
 
         try {
-            // ดึงข้อมูลผ่าน Backend Endpoint: /api/admin/teams
-            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
-            const response = await fetch('${BACKEND_URL}/api/admin/teams');           
+            // *** แก้ไข: ใช้ Backtick (`) เพื่อให้ตัวแปร BACKEND_URL ถูกแทนที่ ***
+            const response = await fetch(`${BACKEND_URL}/api/admin/teams`);           
             const result = await response.json();
 
             if (response.ok) {
@@ -321,12 +321,8 @@
         }
 
         try {
-            // เรียก Backend Endpoint สำหรับอัปเดตสถานะ
-            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
-
-            const response = await fetch('${BACKEND_URL}/api/admin/update-status', {
-
-            
+            // *** แก้ไข: ใช้ Backtick (`) เพื่อให้ตัวแปร BACKEND_URL ถูกแทนที่ ***
+            const response = await fetch(`${BACKEND_URL}/api/admin/update-status`, {
 
                 method: 'POST',
                 headers: {
@@ -357,7 +353,7 @@
 
         try {
             // ดึงข้อมูลผู้เล่นและรายละเอียดทั้งหมด (ต้องสร้าง Endpoint ใหม่)
-            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+            // *** แก้ไข: ใช้ Backtick (`) เพื่อให้ตัวแปร BACKEND_URL ถูกแทนที่ ***
             const response = await fetch(`${BACKEND_URL}/api/admin/team-details/${teamId}`);
             const result = await response.json();
 
@@ -390,7 +386,7 @@
                     <p><strong>รหัส:</strong> ${p2 ? p2.std_staff_id : 'ไม่พบ'}</p>
                     <p><strong>ประเภท:</strong> ${p2 ? (p2.type === 'student' ? 'นักศึกษา' : 'บุคลากร') : 'ไม่พบ'}</p>
                     <div style="text-align: center; margin-bottom: 10px;">
-                         ${p2 && p2.photo_path ? `<a href="${p2.photo_path}" target="_blank"><img src="${p2.photo_path}" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/></a>` : 'ไม่มีรูปภาพ'}
+                        ${p2 && p2.photo_path ? `<a href="${p2.photo_path}" target="_blank"><img src="${p2.photo_path}" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/></a>` : 'ไม่มีรูปภาพ'}
                     </div>
                 `;
                 modal.style.display = 'block';
@@ -412,21 +408,20 @@
         const qrDiv = document.getElementById('currentQr');
         qrDiv.innerHTML = 'กำลังตรวจสอบ QR Code ปัจจุบัน...';
         try {
-             // ต้องสร้าง Endpoint ใหม่ใน server.js สำหรับดึง config
-             const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+            // ต้องสร้าง Endpoint ใหม่ใน server.js สำหรับดึง config
+            // *** แก้ไข: ใช้ Backtick (`) เพื่อให้ตัวแปร BACKEND_URL ถูกแทนที่ ***
+            const response = await fetch(`${BACKEND_URL}/api/config/qr_code_path`);
+            
+            const result = await response.json();
 
-             const response = await fetch('${BACKEND_URL}/api/config/qr_code_path');
-             
-             const result = await response.json();
-
-             if (response.ok && result.qr_code_path) {
+            if (response.ok && result.qr_code_path) {
                 qrDiv.innerHTML = `
                     <p style="color: green; font-weight: bold;"><i class="fas fa-check-circle"></i> QR Code ถูกตั้งค่าแล้ว:</p>
                     <a href="${result.qr_code_path}" target="_blank"><img src="${result.qr_code_path}" style="max-width: 150px; border: 1px solid #ccc; padding: 5px;"/></a>
                 `;
-             } else {
+            } else {
                 qrDiv.innerHTML = `<p style="color: red; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> ยังไม่มีการอัปโหลด QR Code</p>`;
-             }
+            }
             
         } catch (e) {
             console.error('Error fetching QR:', e);
@@ -453,8 +448,8 @@
         
         try {
             // เรียก API Endpoint สำหรับอัปโหลด QR Code
-            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
-            const response = await fetch('${BACKEND_URL}/api/admin/upload-qr', {
+            // *** แก้ไข: ใช้ Backtick (`) เพื่อให้ตัวแปร BACKEND_URL ถูกแทนที่ ***
+            const response = await fetch(`${BACKEND_URL}/api/admin/upload-qr`, {
                 method: 'POST',
                 body: formData
             });

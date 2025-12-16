@@ -48,9 +48,11 @@
     </div>
 
     <script>
+        // กำหนด BACKEND_URL เป็นตัวแปร Global
+        const BACKEND_URL = 'https://badminton-back.onrender.com'; // <--- URL ของ Render
+
         // ฟังก์ชันหลัก: ตรวจสอบสถานะทีมด้วยชื่อทีม
         document.getElementById('checkStatusButton').addEventListener('click', async function() {
-            // *** แก้ไข: เปลี่ยนการดึงค่าจาก teamCode เป็น teamName ***
             const teamNameInput = document.getElementById('teamName');
             const teamName = teamNameInput.value.trim(); 
             const statusResultDiv = document.getElementById('statusResult');
@@ -70,14 +72,14 @@
 
 
             try {
-                // *** แก้ไข Endpoint: เรียกใช้ /api/status/name/:teamName ใหม่ ***
-                const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
-                const response = await fetch(`${BACKEND_URL}/api/status/name/${teamName}`);AD            
+                // *** แก้ไข: ใช้ Backtick (`) และลบ AD ที่เกินมาออก ***
+                const response = await fetch(`${BACKEND_URL}/api/status/name/${teamName}`);
                 const result = await response.json();
 
                 if (response.ok) {
                     const team = result.team;
-                    const qrCodePath = result.qr_code_path; 
+                    // *** แก้ไข: ถ้า QR Code อยู่บน Render ให้ใช้ BACKEND_URL นำหน้า ***
+                    const qrCodePath = team.qr_code_path ? `${BACKEND_URL}/${team.qr_code_path}` : null; 
                     
                     // 1. แสดงรายละเอียดทีมทั่วไป
                     let playersHtml = '';
@@ -92,7 +94,7 @@
                         <p><strong>ชื่อทีม:</strong> ${team.team_name}</p>
                         <p><strong>รุ่นที่สมัคร:</strong> มือ ${team.level}</p>
                         <p><strong>ค่าสมัครรวม:</strong> ${team.total_fee} บาท</p>
-                        <p><strong>สถานะปัจจุบัน:</strong> <span class="status-badge status-${team.status.toLowerCase().replace(/ /g, '-')}" style="font-weight: bold;">${team.status}</span></p>
+                        <p><strong>สถานะปัจจุบัน:</strong> <span class="status-badge status-${team.status.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '')}" style="font-weight: bold;">${team.status}</span></p>
                         <p><strong>ผู้เล่น:</strong>
                             <ul style="list-style-type: none; padding-left: 0; margin-top: 5px;">${playersHtml}</ul>
                         </p>
@@ -100,7 +102,6 @@
                     
                     // 2. จัดการส่วนการชำระเงินตามสถานะ
                     if (team.status === '✅ ผ่านการประเมิน') {
-                        // ทีมผ่านการประเมินแล้ว ต้องชำระเงิน
                         if (qrCodePath) {
                             paymentSection.innerHTML = `
                                 <h3>💸 ยืนยันการชำระเงิน</h3>
@@ -126,11 +127,12 @@
 
                     } else if (team.status === '🔵 รอตรวจสอบการโอนเงิน' || team.status === '🟢 ชำระเงินแล้ว') {
                         // ทีมอยู่ในสถานะรอตรวจสอบ/ชำระแล้ว
+                        const slipLink = team.slip_path ? `${BACKEND_URL}/${team.slip_path}` : ''; // สร้างลิงก์ Slip ที่ถูกต้อง
                         paymentSection.innerHTML = `
                             <div class="uploaded-slip-info">
                                 <p><i class="fas fa-clock"></i> สถานะ: ${team.status}</p>
                                 <p>คุณได้อัปโหลด Slip โอนเงินเรียบร้อยแล้ว: 
-                                ${team.slip_path ? `<a href="${team.slip_path}" target="_blank" style="color: inherit;">(คลิกเพื่อดู Slip)</a>` : ''}
+                                ${slipLink ? `<a href="${slipLink}" target="_blank" style="color: inherit;">(คลิกเพื่อดู Slip)</a>` : ''}
                                 </p>
                                 <p>Admin จะทำการตรวจสอบและเปลี่ยนสถานะเป็น "ชำระเงินแล้ว" ให้ในภายหลัง</p>
                             </div>
@@ -141,8 +143,7 @@
                     statusResultDiv.style.display = 'block';
 
                 } else {
-                    // *** แก้ไขข้อความ Error ให้สอดคล้องกับการค้นหาด้วยชื่อทีม ***
-                    statusResultDiv.innerHTML = `<p style="color: red;"><i class="fas fa-times-circle"></i> ไม่พบทีมชื่อ "${teamName}" นี้ หรือเกิดข้อผิดพลาด: ${result.error}</p>`;
+                    statusResultDiv.innerHTML = `<p style="color: red;"><i class="fas fa-times-circle"></i> ไม่พบทีมชื่อ "${teamName}" นี้ หรือเกิดข้อผิดพลาด: ${result.error || 'Team not found'}</p>`;
                     statusResultDiv.style.display = 'block';
                 }
 
@@ -176,8 +177,7 @@
                 uploadMessage.innerHTML = '';
                 
                 try {
-                    // ใช้ teamCode ที่ดึงมาจากข้อมูลทีมในการส่ง API
-                    const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
+                    // *** แก้ไข: ใช้ Backtick (`) ***
                     const response = await fetch(`${BACKEND_URL}/api/upload-slip/${teamCode}`, { 
                         method: 'POST',
                         body: formData 
@@ -190,7 +190,7 @@
                         // โหลดสถานะใหม่ทันที เพื่ออัปเดตหน้าจอ
                         document.getElementById('checkStatusButton').click(); 
                     } else {
-                        uploadMessage.innerHTML = `<p style="color: red;"><i class="fas fa-times"></i> อัปโหลดไม่สำเร็จ: ${result.error}</p>`;
+                        uploadMessage.innerHTML = `<p style="color: red;"><i class="fas fa-times"></i> อัปโหลดไม่สำเร็จ: ${result.error || 'Server Error'}</p>`;
                     }
                     
                 } catch (error) {

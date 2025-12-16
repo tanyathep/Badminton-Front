@@ -12,11 +12,8 @@
         <div class="logo">BADMINTON SUT 2025</div>
         <div class="header-nav">
             <a href="index.html">หน้าหลัก</a>
-            
         </div>
     </div>
-
-    
 
     <div class="container">
     <form id="registrationForm">
@@ -103,10 +100,14 @@
     </form>
 </div>
     <script>
+    // ** การแก้ไขที่ 1: กำหนด BACKEND_URL เป็น Global Variable **
+    const BACKEND_URL = 'https://badminton-back.onrender.com'; // <--- URL ของ Render
+
     // 1. ฟังก์ชันใหม่: แสดงตัวอย่างรูปภาพ
     function previewImage(inputID, previewID) {
         const input = document.getElementById(inputID);
         const previewContainer = document.getElementById(previewID);
+        // ลบบรรทัด: const BACKEND_URL = 'https://Badminton-Back.onrender.com'; 
 
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -122,7 +123,6 @@
 
     // 2. โค้ดคำนวณค่าสมัคร (เหมือนเดิม)
     function calculateFee() {
-        // ... (โค้ดคำนวณค่าสมัครเหมือนเดิม) ...
         const p1Type = document.getElementById('p1_type').value;
         const p2Type = document.getElementById('p2_type').value;
         let totalFee = 0;
@@ -145,18 +145,14 @@
         const form = e.target;
         const submitButton = form.querySelector('.submit-button');
 
-        // ใช้ FormData ในการรวมข้อมูลฟอร์มและไฟล์ (รูปภาพ)
         const formData = new FormData(form);
-
-        // ... (ส่วนการเตรียม formData เหมือนเดิม) ...
 
         submitButton.disabled = true;
         submitButton.innerText = 'กำลังส่งข้อมูล...';
 
         try {
-            // ส่งข้อมูลไปยัง API Endpoint ใน Express Server ที่รันอยู่ที่ Port 3000
-            const BACKEND_URL = 'https://badminton-sut-server.onrender.com'; // <--- แทนที่ด้วย URL ของ Render
-            const response = await fetch('${BACKEND_URL}/api/register', {
+            // ** การแก้ไขที่ 2: ใช้ Backtick (`) สำหรับ Template Literal **
+            const response = await fetch(`${BACKEND_URL}/api/register`, {
                 method: 'POST',
                 body: formData 
             });
@@ -164,10 +160,13 @@
             const result = await response.json();
 
             if (response.ok) {
-                alert(`ลงทะเบียนสำเร็จ! รหัสทีมของคุณ: ${result.team_code} โปรดใช้รหัสนี้ในการติดตามสถานะ`);
+                // ** การแก้ไขตามความต้องการ: ลบการแสดง team_code ออก **
+                alert(`ลงทะเบียนสำเร็จแล้ว! โปรดใช้ชื่อทีมของคุณ (${teamNameValue}) เพื่อตรวจสอบสถานะการประเมิน`);
 
                 form.reset(); 
                 calculateFee();
+                toggleClipInput(); // รีเซ็ตสถานะการแสดงผล
+                
                 // รีเซ็ต Preview รูปภาพ
                 document.getElementById('p1_preview').innerHTML = `<i class="fas fa-image fa-3x" style="color: #ccc;"></i>`;
                 document.getElementById('p2_preview').innerHTML = `<i class="fas fa-image fa-3x" style="color: #ccc;"></i>`;
@@ -184,3 +183,5 @@
         }
     });
 </script>
+</body>
+</html>
